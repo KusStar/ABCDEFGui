@@ -17,7 +17,7 @@ int main() {
 
   InitContext(ctx);
 
-  const char *buf = "import './test';";
+  const char *buf = "import './build/out.js';";
 
   JSValue result = JS_Eval(ctx, buf, strlen(buf), "",
                            JS_EVAL_TYPE_GLOBAL | JS_EVAL_TYPE_MODULE);
