@@ -15,8 +15,6 @@ int main() {
   JS_SetModuleLoaderFunc(rt, (JSModuleNormalizeFunc *)ModuleNormalizeName,
                          ModuleLoader, NULL);
 
-  js_init_module_std(ctx, "std");
-
   InitContext(ctx);
 
   const char *buf = "import './test';";

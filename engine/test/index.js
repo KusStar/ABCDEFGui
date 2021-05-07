@@ -1,4 +1,4 @@
-import * as std from 'std'
 import './a'
 
-console.log('test')
+console.log(typeof ImGui)
+console.log(typeof ImGui.CreateContext)

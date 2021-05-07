@@ -60,10 +60,6 @@ char *GetCwd() {
   return answer;
 }
 
-bool IsDir() {
-  std::string path = "/path/to/directory";
-}
-
 } // namespace Helpers
 
 static void AddConsole(JSContext *ctx, JSValue &obj) {
@@ -90,6 +86,11 @@ static void AddImGui(JSContext *ctx, JSValue &obj) {
   JS_SetPropertyStr(ctx, obj, "ImGui", ui);
 }
 
+static void AddGlobal(JSContext *ctx, JSValue &obj) {
+  JSValue globalObj = JS_GetGlobalObject(ctx);
+  JS_SetPropertyStr(ctx, obj, "global", globalObj);
+}
+
 static void InitContext(JSContext *ctx,
                         std::function<void(JSContext *, JSValue &)> *funcs,
                         int len) {
@@ -101,7 +102,8 @@ static void InitContext(JSContext *ctx,
 }
 
 static void InitContext(JSContext *ctx) {
-  std::function<void(JSContext *, JSValue &)> funcs[] = {AddConsole, AddImGui};
+  std::function<void(JSContext *, JSValue &)> funcs[] = {AddConsole, AddImGui,
+                                                         AddGlobal};
   InitContext(ctx, funcs, countof(funcs));
 }
 
@@ -111,21 +113,12 @@ static JSModuleDef *ModuleLoader(JSContext *ctx, const char *module_name,
   JSModuleDef *m;
   char *name = strdup(module_name);
 
-  // if (!Helpers::has_suffix(name, ".js")) {
-  //   name = strcat(name, ".js");
-  // }
-
   size_t buf_len;
   uint8_t *buf;
   JSValue func_val;
 
   buf = js_load_file(ctx, &buf_len, name);
   if (!buf) {
-    // if (!Helpers::has_suffix(name, "/index.js")) {
-    //   name = strndup(name, strlen(name) - 3);
-    //   name = strcat(name, "/index.js");
-    //   return ModuleLoader(ctx, name, opaque);
-    // }
     JS_ThrowReferenceError(ctx, "could not load module filename '%s'", name);
     return NULL;
   }
