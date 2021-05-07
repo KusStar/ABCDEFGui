@@ -1,33 +1,38 @@
-const fs = require('fs')
 const execa = require('execa')
 const esbuild = require('esbuild')
-const chokidar = require('chokidar');
+const chokidar = require('chokidar')
+const debounce = require('lodash/debounce')
+const dayjs = require('dayjs')
+const chalk = require('chalk')
 
-chokidar.watch(['./*.cpp', './*.h']).on('all', (event, path) => {
-  console.log('--------------')
-  console.log('Make')
-  console.log('--------------')
-  const exe = execa('make');
-  exe.stderr.pipe(process.stdout)
-  exe.stdout.pipe(process.stdout)
-});
-
-build()
-
-let times = 0
-function make() {
-  let cmd
-  if (!fs.existsSync('./build/test')) {
-    cmd = 'make'
-  } else {
-    cmd = './build/test'
-  }
-  console.log('--------------')
-  console.log('--------------', times++)
-  execa(cmd).stdout.pipe(process.stdout);
+function log(...args) {
+  args.push(chalk.cyan(dayjs().format('HH:mm:ss')))
+  const message = args.join(' ')
+  const separator = '-'.repeat(message.length)
+  console.log(separator)
+  console.log(message)
+  console.log(separator)
 }
 
-function build() {
+function makeExe(cmd) {
+  const { stderr, stdout } = execa.command(cmd)
+  stderr && stderr.on('data', (chunk) => {
+    console.log(chalk.redBright(chunk.toString()))
+  })
+  stdout.pipe(process.stdout)
+}
+
+function nativeBuild(event, path) {
+  log(chalk.cyan.bold(event.toUpperCase()), path)
+  makeExe('make')
+}
+
+function runTest() {
+  log(chalk.yellow.bold('ESBUILD'))
+  makeExe('./build/test')
+}
+
+function esBuildWatch(cb) {
   esbuild.build({
     entryPoints: ['./test/index.js'],
     outfile: './build/out.js',
@@ -35,17 +40,23 @@ function build() {
     watch: {
       onRebuild(error, result) {
         if (error) {
-          console.log('--------------', 'stopped')
-          result.stop()
-        }
-        else {
-          make()
+          log('Error')
+        } else {
+          cb()
         }
       },
     },
-  }).then(result => {
-    // Call "stop" on the result when you're done
-    // result.stop()
-    make()
   })
 }
+
+function main() {
+  const debouncedNativeBuild = debounce(nativeBuild, 300)
+
+  chokidar.watch(['./*.cpp', './*.h']).on('all', (event, path) => {
+    debouncedNativeBuild(event, path)
+  })
+
+  esBuildWatch(runTest)
+}
+
+main()

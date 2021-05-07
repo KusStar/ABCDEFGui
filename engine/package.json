@@ -11,8 +11,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^4.1.1",
     "chokidar": "^3.5.1",
+    "dayjs": "^1.10.4",
     "esbuild": "^0.11.19",
-    "execa": "^5.0.0"
+    "execa": "^5.0.0",
+    "lodash": "^4.17.21"
   }
 }

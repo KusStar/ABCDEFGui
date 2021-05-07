@@ -22,7 +22,12 @@ int main() {
   JSValue result = JS_Eval(ctx, buf, strlen(buf), "",
                            JS_EVAL_TYPE_GLOBAL | JS_EVAL_TYPE_MODULE);
 
-  cout << Stringify(ctx, result) << endl;
+  if (JS_IsException(result)) {
+    cerr << StringifyError(ctx, result) << endl;
+    return 0;
+  } else {
+    cout << Stringify(ctx, result) << endl;
+  }
 
   JS_FreeValue(ctx, result);
   JS_FreeContext(ctx);

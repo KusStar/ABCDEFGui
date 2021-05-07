@@ -13,9 +13,6 @@ namespace Engine {
 static std::string StringifyError(JSContext *ctx, JSValueConst exception_val);
 
 static std::string Stringify(JSContext *ctx, JSValueConst val) {
-  if (JS_IsException(val)) {
-    return StringifyError(ctx, val);
-  }
   const char *str = JS_ToCString(ctx, val);
   if (str) {
     std::string result(str);
